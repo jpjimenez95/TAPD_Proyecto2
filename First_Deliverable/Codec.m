@@ -1,7 +1,7 @@
 function Codec()
     %CreateWav('Sine500Hz.wav', 500);
-    %CreateWav('Random.wav', 250);
-    [Original, Fs] = audioread('Random.wav');
+    CreateWav('Random2.wav', 300);
+    [Original, Fs] = audioread('Random2.wav');
     Original = transpose(Original);
     
     % Codifica la senal de original
@@ -16,7 +16,7 @@ function Codec()
     end
     
     % Guarda los datos codificados
-    fileID = fopen('Random.bin', 'w');
+    fileID = fopen('Random2.bin', 'w');
     fwrite(fileID, Codificado, 'int8');
     fclose(fileID);
     
@@ -31,9 +31,10 @@ function Codec()
         end
     end
     
-    Original(80001) = [];
+    %Original(80001) = [];
     t = (0:79999)/8000;
     
+    % Graficacion de las dos senales
     subplot(2,1,1)
     plot(t ,Original)
     title('Senal Original')
@@ -53,12 +54,36 @@ end
 function CreateWav(FileName, Freq)
     Fs = 8e3;   % Frecuencia de muestreo 8kHz
     sample = zeros(1,125);
-    % Creacion del tono
+    
+    % Creacion de tonos puros
     for i = 1:80001
-        y = sin(2*pi*Freq*i/Fs)-0.4*sin(4*pi*Freq*i/Fs)+0.6*sin(6*pi*Freq*i/Fs);
-        %y = sin(2*pi*Freq*i/Fs); %Tonos Puros
+        y = sin(2*pi*Freq*i/Fs);
         sample(i) = half(y);
     end
+    
+    %{
+    % Creacion del tono distorisonado con 3 armonicas
+    for i = 1:80001
+        y = sin(2*pi*Freq*i/Fs)-0.4*sin(4*pi*Freq*i/Fs)+0.6*sin(6*pi*Freq*i/Fs);
+        sample(i) = half(y);
+    end
+    %}
+    
+    %{ 
+    %Codigo para crear ejemplos mas aleatorios
+    for i = 1:4:(80001-1)
+        % Codigo para crear ejemplos mas aleatorios
+        y1 = sin(2*pi*Freq*i/Fs)-0.4*sin(4*pi*Freq*i/Fs);
+        y2 = -0.4*sin(4*pi*Freq*i/Fs)+0.6*sin(6*pi*Freq*i/Fs);
+        y3 = (-1)^i;
+        y4 = 0.2;
+        sample(i) = half(y1);
+        sample(i+1) = half(y2);
+        sample(i+2) = half(y3);
+        sample(i+3) = half(y4);
+        
+    end
+    %}
     
     % Creacion del archivo wave
     audiowrite(FileName, sample, Fs);
@@ -82,10 +107,10 @@ function X = RFFT(Samples)
 end
 
 function x = IRFFT(Samples)
-    n = 2 * (length(Samples) - 1 );
+    n = 2 * (length(Samples) - 1 ); % Cantidad de muestras
     s = length(Samples) - 1;
       
-    xn = zeros(1,n);
+    xn = zeros(1,n); % Variable temporal
     xn(1:length(Samples)) = Samples;
     xn(length(Samples)+1:n) = conj(Samples(s:-1:2));
     x = real(ifft(xn));
