@@ -1,24 +1,31 @@
 function Codec()
     %CreateWav('Sine500Hz.wav', 500);
-    CreateWav('Random2.wav', 300);
-    [Original, Fs] = audioread('Random2.wav');
+    %CreateWav('Random2.wav', 300);
+    [Original, Fs] = audioread('Sine1kHz.wav');
     Original = transpose(Original);
+    
+    t = (0:80000)/8000; % Definicion del vector de tiempo
     
     % Codifica la senal de original
     for i = 1:64:(length(Original)-1)
         Samples = Original(i:(i+63));
         if i == 1
-            Codificado = RFFT(Samples);
+            codificado = RFFT(Samples);
         else
             Temp = RFFT(Samples);
-            Codificado = [Codificado Temp]; 
+            codificado = [codificado Temp];
         end
     end
     
+    
     % Guarda los datos codificados
-    fileID = fopen('Random2.bin', 'w');
-    fwrite(fileID, Codificado, 'int8');
+    fileID = fopen('Sine1kHz.bin', 'w');
+    fwrite(fileID, codificado, 'int8');
     fclose(fileID);
+    
+    % Carga la senal desde el bin almacenado
+    fileID = fopen('Sine1kHz.bin', 'r');
+    Codificado = fread(fileID, [1 41250],'int8');
     
     % Decodifica la senal obtenida en el paso anterior
     for j = 1:33:(length(Codificado)-1)
@@ -31,24 +38,17 @@ function Codec()
         end
     end
     
-    %Original(80001) = [];
-    t = (0:79999)/8000;
-    
     % Graficacion de las dos senales
-    subplot(2,1,1)
-    plot(t ,Original)
-    title('Senal Original')
-    xlabel('Tiempo [s]')
-    ylabel('Amplitud')
-    xlim([0 16e-3])
+    plot(t, Original);
+    title('Senal Distorsionada');
+    xlabel('Tiempo [s]');
+    ylabel('Amplitud');
+    xlim([0 16e-3]);
     
-    subplot(2,1,2)
-    plot(t, Decodificado)
-    title('Senal Decodificada')
-    xlabel('Tiempo [s]')
-    ylabel('Amplitud')
-    xlim([0 16e-3])
-    
+    hold on;
+    plot(t(1:80000), Decodificado);
+    legend("Senal Original", "Senal Decodificada");
+    hold off
 end
 
 function CreateWav(FileName, Freq)
@@ -98,8 +98,6 @@ function X = RFFT(Samples)
     z = Samples(1:2:n) + 1j*Samples(2:2:n);
     
     Z = fft(z);
-    disp(Z(1));
-    disp(Z(n2:-1:2));
     Ze = 0.5*( Z + conj([Z(1),Z(n2:-1:2)]));        % even part
     Zo = -0.5*1j*( Z - conj([Z(1),Z(n2:-1:2)]) );     % odd part
     X = [Ze,Ze(1)] + exp(-1j*2*pi/n*(0:n2)).*[Zo,Zo(1)];  % combine
