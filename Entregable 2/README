@@ -2,4 +2,4 @@ Para la ejecución del programase debe tener el archivo codec.c y el seno400.wav
 En este directorio se debe abrir la terminal y ejecutar las siguiestes lineas
 gcc codec.c -lm -o codec
 ./codec
-Unas vez terminado, ya se abran generado el archivo ejecutable del programa, un archivo codificado
+Unas vez terminado, ya se abran generado el archivo ejecutable del programa, un archivo codificado el cual es seno400_zip.wav, un archivo de pruebas csv y el archivo decodificado
